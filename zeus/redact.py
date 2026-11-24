@@ -13,6 +13,11 @@ _PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ("private_key", re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----", re.S)),
     ("aws_key", re.compile(r"\b(?:AKIA|ASIA)[0-9A-Z]{16}\b")),
     ("bearer_token", re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._~+/=-]{16,}")),
+    ("gcp_key", re.compile(r"\bAIza[A-Za-z0-9_-]{35}\b")),
+    ("gcp_token", re.compile(r"\bya29\.[A-Za-z0-9_-]+\b")),
+    ("slack_token", re.compile(r"\bxox[baprs]-[A-Za-z0-9-]+\b")),
+    ("github_token", re.compile(r"\b(?:gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,})\b")),
+    ("uri_credentials", re.compile(r"(?i)\b[a-z][a-z0-9+.-]*://[^/\s:@]+:[^/\s@]+@")),
     ("api_key", re.compile(r"\bsk-[A-Za-z0-9_-]{16,}\b")),
     ("secret_assignment", re.compile(
         r"(?i)\b(password|passwd|pwd|secret|token|api[_-]?key)\b\s*[:=]\s*(\"[^\"]*\"|'[^']*'|[^\s;,]+)")),

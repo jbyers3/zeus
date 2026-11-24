@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from .engine import likelihood_label
 from .models import NONE_OF_THE_ABOVE, Analysis, Attempt, Disposition, Incident
 
 
@@ -31,11 +32,11 @@ def render_report(
         "",
         "## Hypotheses",
         "",
-        "| # | Cause | Confidence | Evidence |",
+        "| # | Cause | Model likelihood | Evidence |",
         "| - | ----- | ---------- | -------- |",
     ]
     for h in analysis.hypotheses:
-        out.append(f"| {h.rank} | {_cell(h.cause)} | {h.confidence:.0%} | {_cell('; '.join(h.evidence))} |")
+        out.append(f"| {h.rank} | {_cell(h.cause)} | {likelihood_label(h.confidence)} | {_cell('; '.join(h.evidence))} |")
     out.append(f"| {NONE_OF_THE_ABOVE} | None of the above | n/a | Cause found outside Zeus's suggestions |")
 
     out += ["", "## What was tried", ""]

@@ -15,6 +15,7 @@ import os
 import sys
 from pathlib import Path
 
+from .engine import likelihood_label
 from .models import NONE_OF_THE_ABOVE, Analysis, Incident, Outcome
 from .providers import ProviderError, get_provider
 from .workspace import GuardrailError, PermissionDenied, RationExceeded, Workspace
@@ -26,7 +27,7 @@ def _print_analysis(analysis: Analysis, remaining: int) -> None:
         print(f"\n{analysis.summary}")
     print("\nCompeting hypotheses:")
     for h in analysis.hypotheses:
-        print(f"\n  {h.rank}. {h.cause}  ({h.confidence:.0%})")
+        print(f"\n  {h.rank}. {h.cause}  (model likelihood: {likelihood_label(h.confidence)})")
         for e in h.evidence:
             print(f"       evidence: {e}")
         for s in h.next_steps:
