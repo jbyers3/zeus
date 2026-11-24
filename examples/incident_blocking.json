@@ -1,0 +1,21 @@
+{
+  "id": "INC-1001",
+  "app": "loan-origination",
+  "title": "Loan application submissions timing out",
+  "severity": "high",
+  "opened_at": "2026-11-24T14:05:00Z",
+  "description": "Customers report the submit step hanging for 30+ seconds. Started around 14:00 UTC.",
+  "signals": [
+    {"source": "sqlserver", "name": "blocked_sessions", "value": 47, "timestamp": "2026-11-24T14:03:00Z"},
+    {"source": "sqlserver", "name": "head_blocker_wait", "value": "LCK_M_X", "timestamp": "2026-11-24T14:03:00Z"},
+    {"source": "sqlserver", "name": "cpu_percent", "value": 38, "unit": "%"},
+    {"source": "sqlserver", "name": "page_life_expectancy", "value": 4200, "unit": "s"},
+    {"source": "scheduler", "name": "etl_job_nightly_rollup_status", "value": "running (started 13:55, normally ends 04:00)"},
+    {"source": "apm", "name": "submit_endpoint_p99_latency", "value": 31.4, "unit": "s"}
+  ],
+  "recent_changes": [
+    "CHG-2231: nightly rollup ETL schedule moved from 02:00 to 13:55 (applied yesterday)"
+  ],
+  "maintenance_windows": [],
+  "dependencies": ["loan-db (SQL Server Availability Group)", "credit-bureau-api"]
+}

@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zeus-incident"
+version = "0.1.0"
+description = "Evidence-first incident reasoning for on-call engineers. Zeus advises. Engineers decide."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "JB Byers" }]
+license = { file = "LICENSE" }
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.scripts]
+zeus = "zeus.cli:main"
+
+[tool.setuptools]
+packages = ["zeus"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
