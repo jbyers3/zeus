@@ -126,3 +126,36 @@ def test_cli_round_trip(tmp_path, capsys):
     assert main(home + ["close", "INC-1001", "--root-cause", "x", "--resolution", "y", "--user", "jb"]) == 0
     assert main(home + ["report", "INC-1001", "--user", "jb"]) == 0
     assert "## Resolution" in capsys.readouterr().out
+
+def test_rejects_path_like_incident_id(ws, incident):
+    eng = ws.login("demo", "engineer")
+    incident.id = "../escape"
+    with pytest.raises(GuardrailError, match="invalid incident"):
+        ws.analyze(eng, incident)
+    with pytest.raises(GuardrailError, match="invalid incident"):
+        ws.load_analysis("../escape")
+
+
+def test_inconclusive_alternative_does_not_allow_close(ws, incident):
+    eng = ws.login("demo", "engineer")
+    ws.analyze(eng, incident)
+    ws.log_attempt(eng, incident.id, 0, "checked", "uncertain", "inconclusive")
+    with pytest.raises(GuardrailError, match="still open"):
+        ws.close(eng, incident.id, "cause", "resolution")
+    with pytest.raises(GuardrailError, match="cannot replace"):
+        ws.analyze(eng, incident)
+
+
+def test_concurrent_budget_reservations(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+    from zeus.workspace import Rationer
+    ration = Rationer(tmp_path / "budget.sqlite3", 3, 600, lambda: 1000.0)
+    def reserve(_):
+        try:
+            ration.consume("demo")
+            return True
+        except RationExceeded:
+            return False
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        assert sum(executor.map(reserve, range(12))) == 3
+    assert ration.remaining("demo") == 0

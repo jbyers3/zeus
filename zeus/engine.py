@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 
 from .context import ContextLimits, build_context
@@ -38,23 +39,29 @@ def _as_str_list(value) -> list[str]:
     if isinstance(value, str):
         return [value] if value.strip() else []
     if isinstance(value, list):
-        return [str(v).strip() for v in value if str(v).strip()]
+        return [v.strip() for v in value if isinstance(v, str) and v.strip()]
     return []
 
 
 def parse_analysis(raw: str, incident_id: str, model: str, max_hypotheses: int = 5) -> Analysis:
     data = _extract_json(raw)
     hypotheses: list[Hypothesis] = []
-    for item in data.get("hypotheses") or []:
+    items = data.get("hypotheses", [])
+    if not isinstance(items, list):
+        raise AnalysisError("hypotheses must be an array")
+    for item in items:
         if not isinstance(item, dict):
             continue
-        cause = str(item.get("cause", "")).strip()
+        cause = item.get("cause", "")
+        cause = cause.strip() if isinstance(cause, str) else ""
         evidence = _as_str_list(item.get("evidence"))
         if not cause or not evidence:
             continue  # doctrine: no evidence, no hypothesis
         try:
             confidence = float(item.get("confidence", 0))
         except (TypeError, ValueError):
+            confidence = 0.0
+        if not math.isfinite(confidence):
             confidence = 0.0
         hypotheses.append(Hypothesis(
             rank=0,
@@ -100,3 +107,8 @@ class Zeus:
         analysis = parse_analysis(raw, incident.id, self.provider.name, self.max_hypotheses)
         analysis.similar_events = [d.summary() for d in similar]
         return analysis
+
+
+def likelihood_label(score: float) -> str:
+    """Model-assigned ordinal label, not a calibrated probability."""
+    return "high" if score >= 0.75 else "medium" if score >= 0.4 else "low"

@@ -88,3 +88,20 @@ def test_mock_provider_classifies_noise_without_signals():
     analysis = Zeus(MockProvider()).analyze(_incident(signals=[]))
     assert analysis.classification is Classification.NOISE
     assert analysis.hypotheses == []
+
+def test_malformed_hypothesis_container():
+    with pytest.raises(AnalysisError, match="array"):
+        parse_analysis('{"hypotheses": {"cause": "bad"}}', "INC-1", "test")
+
+
+def test_nonfinite_confidence_and_nontext_evidence():
+    raw = '{"hypotheses": [{"cause":"bad","evidence":[null,1],"confidence":1}, {"cause":"ok","evidence":["signal"],"confidence":NaN}]}'
+    analysis = parse_analysis(raw, "INC-1", "test")
+    assert len(analysis.hypotheses) == 1
+    assert analysis.hypotheses[0].confidence == 0
+
+
+def test_additional_token_redaction():
+    values = ["AIza" + "a" * 35, "ya29.exampletoken", "xoxb-example-token", "ghp_" + "a" * 30, "postgres://demo:secret@host/db"]
+    cleaned = redact(" ".join(values))
+    assert all(value not in cleaned for value in values)
